@@ -1,36 +1,26 @@
-# Étape 1 : Construire l'application avec Maven
+# Étape 1 : Construction avec Maven
 FROM openjdk:19-jdk AS build
 WORKDIR /app
-
-# Copier les fichiers nécessaires pour Maven
 COPY pom.xml .
-COPY mvnw .
+COPY src src
+COPY mvnw . 
 COPY .mvn .mvn
 
-# Télécharger les dépendances (optimisation du cache)
 RUN chmod +x ./mvnw
-RUN ./mvnw dependency:go-offline
-
-# Copier les sources et compiler l'application
-COPY src src
 RUN ./mvnw clean package -DskipTests
 
-# Vérifier si le .jar est bien généré
-RUN ls -l /app/target/
+# Vérification que le fichier .jar est bien généré
+RUN ls -l /app/target
 
-# Étape 2 : Construire l'image finale
+# Étape 2 : Créer l'image finale
 FROM openjdk:19-jdk
-WORKDIR /app
+VOLUME /tmp
 
-# Assurer que le dossier existe
-RUN mkdir -p /app
-
-# Copier le .jar correctement et vérifier son existence
+# Copier le fichier .jar généré dans l'image finale
 COPY --from=build /app/target/*.jar /app/app.jar
-RUN ls -l /app/
 
-# Exposer le port 8080
-EXPOSE 8080
+# Vérification de l'existence du fichier .jar dans le répertoire /app
+RUN ls -l /app
 
-# Lancer l'application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+EXPOSE 8080
