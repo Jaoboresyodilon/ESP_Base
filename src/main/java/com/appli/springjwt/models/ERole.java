@@ -1,0 +1,17 @@
+package com.appli.springjwt.models;
+
+public enum ERole {
+  ROLE_USER,
+  ROLE_MODERATOR,
+  ROLE_ADMIN,
+  SCOLARITE,
+  PRESIDENT_JURY,
+  RESPONSABLE_PARCOURS,
+  RESPONSABLE_MENTION,
+  ETUDIANT,
+  ENSEIGNANT,
+  DIRECTION,
+  CANDIDAT,
+
+
+}
