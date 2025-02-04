@@ -16,6 +16,9 @@ RUN ls -l /app/target
 FROM openjdk:19-jdk
 VOLUME /tmp
 
+# Créer le répertoire /app dans l'image finale
+RUN mkdir /app
+
 # Copier le fichier .jar généré dans l'image finale
 COPY --from=build /app/target/*.jar /app/app.jar
 
