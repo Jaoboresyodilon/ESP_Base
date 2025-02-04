@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src /app/src
 
-# Copier le wrapper Maven
+# Copier le wrapper Maven et le répertoire .mvn
 COPY mvnw .
 COPY .mvn .mvn
 
@@ -25,6 +25,9 @@ VOLUME /tmp
 
 # Copier le fichier .jar généré par l'étape de build
 COPY --from=build /app/target/*.jar /app/app.jar
+
+# Vérification si le fichier .jar est copié correctement
+RUN ls -l /app/
 
 # Définir la commande de démarrage du container
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
