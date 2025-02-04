@@ -1,22 +1,33 @@
-# Importation du JDK et copie des fichiers requis
-FROM openjdk:19-jdk AS build 
-WORKDIR /app 
-COPY pom.xml . 
-COPY src src 
+# Étape 1 : Construire l'application avec Maven
+FROM openjdk:19-jdk AS build
+WORKDIR /app
 
-# Copie du wrapper Maven
- COPY mvnw . 
-COPY .mvn .mvn 
+# Copier le fichier pom.xml et les sources
+COPY pom.xml .
+COPY src /app/src
 
-# Définition des autorisations d'exécution pour le wrapper Maven
- RUN chmod +x ./mvnw 
-RUN ./mvnw clean package -DskipTests 
+# Copier le wrapper Maven
+COPY mvnw .
+COPY .mvn .mvn
 
-# Étape 2 : Créer l'image Docker finale à l'aide d'OpenJDK 19
- FROM openjdk:19-jdk 
-VOLUME /tmp 
+# Donner les autorisations d'exécution au wrapper Maven
+RUN chmod +x ./mvnw
 
-# Copier le JAR à partir de l'étape de construction
- COPY --from=build /app/target/*.jar app.jar 
-ENTRYPOINT [ "java" , "-jar" , "/app.jar" ] 
+# Exécuter la commande Maven pour construire le projet (sans tester)
+RUN ./mvnw clean package -DskipTests
+
+# Vérification du contenu du dossier target pour s'assurer que le fichier .jar existe
+RUN ls -l /app/target/
+
+# Étape 2 : Créer l'image Docker finale à partir du JDK
+FROM openjdk:19-jdk
+VOLUME /tmp
+
+# Copier le fichier .jar généré par l'étape de build
+COPY --from=build /app/target/*.jar /app/app.jar
+
+# Définir la commande de démarrage du container
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+# Exposer le port utilisé par l'application (8080 par défaut pour Spring Boot)
 EXPOSE 8080
