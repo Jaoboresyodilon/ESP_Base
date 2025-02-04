@@ -23,10 +23,13 @@ RUN ls -l /app/target/
 FROM openjdk:19-jdk
 VOLUME /tmp
 
+# Créer le répertoire /app avant de copier le fichier .jar
+RUN mkdir /app
+
 # Copier le fichier .jar généré par l'étape de build
 COPY --from=build /app/target/*.jar /app/app.jar
 
-# Vérification si le fichier .jar est copié correctement
+# Vérification du fichier .jar copié (tu peux enlever cette étape si tu veux)
 RUN ls -l /app/
 
 # Définir la commande de démarrage du container
