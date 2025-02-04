@@ -9,7 +9,7 @@ COPY .mvn .mvn
 RUN chmod +x ./mvnw
 RUN ./mvnw clean package -DskipTests
 
-# Vérification que le fichier .jar est bien généré
+# Vérification que le fichier .jar est bien généré dans /app/target
 RUN ls -l /app/target
 
 # Étape 2 : Créer l'image finale
@@ -25,5 +25,6 @@ COPY --from=build /app/target/*.jar /app/app.jar
 # Vérification de l'existence du fichier .jar dans le répertoire /app
 RUN ls -l /app
 
+# Commande pour démarrer l'application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 EXPOSE 8080
