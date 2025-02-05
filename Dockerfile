@@ -1,38 +1,26 @@
-# Étape 1 : Construction de l'application avec Maven
-FROM openjdk:19-jdk AS build
-
-# Définir le répertoire de travail
+# Étape 1 : Construire l'application avec Maven
+FROM maven:3.8.6-openjdk-11 AS build
 WORKDIR /app
 
-# Copier le fichier pom.xml et les sources
-COPY pom.xml .
-COPY src src
-COPY mvnw .
-COPY .mvn .mvn
+# Copier uniquement les fichiers nécessaires pour accélérer la mise en cache
+COPY pom.xml ./
+RUN mvn dependency:go-offline
 
-# Donner les permissions d'exécution au wrapper Maven
-RUN chmod +x ./mvnw
+# Copier tout le projet après la mise en cache des dépendances
+COPY . .
 
-# Construire l'application et générer le fichier .jar
-RUN ./mvnw clean package -DskipTests
+# Compiler l'application et générer le fichier JAR
+RUN mvn clean package -DskipTests
 
-# Vérifier que le fichier .jar est bien généré
-RUN ls -l /app/target
+# Étape 2 : Construire l'image finale avec OpenJDK léger
+FROM openjdk:11-jdk-slim
+WORKDIR /app
 
-# Étape 2 : Créer l'image finale
-FROM openjdk:19-jdk
-
-# Créer le répertoire /app dans l'image finale
-RUN mkdir /app
-
-# Copier le fichier .jar généré de l'étape de construction dans l'image finale
+# Copier uniquement le fichier JAR généré depuis l'étape précédente
 COPY --from=build /app/target/*.jar /app/app.jar
 
-# Vérification que le fichier .jar existe bien dans le répertoire /app
-RUN ls -l /app
-
-# Définir la commande pour démarrer l'application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
-
-# Exposer le port 8080 pour l'application Spring Boot
+# Exposer le port d'exécution de l'application
 EXPOSE 8080
+
+# Démarrer l'application Spring Boot
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
